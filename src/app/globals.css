@@ -1,0 +1,21 @@
+/* src/app/globals.css */
+@import "tailwindcss";
+@import "trumbowyg/dist/ui/trumbowyg.min.css";
+@plugin './hero.ts';
+/* relative to src/app/hero.ts if you put hero.ts inside src/app */
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@theme {
+  --color-primary: #2563eb;
+  --color-primary-foreground: #ffffff;
+}
+
+.trumbowyg-button-pane .trumbowyg-button svg {
+  background-image: url('/trumbowyg/icons.svg') !important;
+}
+
+/* avoid the “tiny line” editor on reopen */
+.trumbowyg-box,
+.trumbowyg-editor {
+  min-height: 260px;
+}
