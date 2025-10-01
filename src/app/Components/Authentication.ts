@@ -1,12 +1,17 @@
-// Authentication.ts
 "use client";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 let currentUser: any = null;
 
 if (typeof window !== "undefined") {
   const userStr = localStorage.getItem("currentUser");
   if (userStr) {
-    try { currentUser = JSON.parse(userStr); } catch { currentUser = null; }
+    try {
+      currentUser = JSON.parse(userStr);
+    } catch {
+      currentUser = null;
+    }
   }
 }
 
@@ -17,32 +22,28 @@ export const authenticationService = {
 
   async login(email: string, password: string) {
     try {
-      const response = await fetch(`/api/authenticate`, {
+      const response = await fetch(`${API_URL}authenticate.json`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ authentication: { email, password } }),
       });
 
-      const text = await response.text();
-      const maybeJson = (() => { try { return JSON.parse(text); } catch { return null; } })();
-
       if (!response.ok) {
-        // Prefer upstream message if present
-        const msg =
-          (maybeJson && (maybeJson.error || maybeJson.message)) ||
-          text ||
-          `Login failed (${response.status})`;
-        throw new Error(msg);
+        throw new Error("Invalid email or password");
       }
 
-      const user = maybeJson ?? {};
-      if (user.email === "anonymous@livo.ai") user.test_account = true;
+      const user = await response.json();
+
+      if (user.email === "anonymous@livo.ai") {
+        user.test_account = true;
+      }
 
       localStorage.setItem("currentUser", JSON.stringify(user));
       currentUser = user;
+
       return user;
     } catch (error: any) {
-      throw (error?.message ?? "Login failed");
+      throw error.message || "Login failed";
     }
   },
 
@@ -51,4 +52,3 @@ export const authenticationService = {
     currentUser = null;
   },
 };
-
