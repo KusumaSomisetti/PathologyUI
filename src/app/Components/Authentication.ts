@@ -19,19 +19,24 @@ export const authenticationService = {
     try {
       const response = await fetch(`/api/authenticate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ authentication: { email, password } }),
       });
 
+      const text = await response.text();
+      const maybeJson = (() => { try { return JSON.parse(text); } catch { return null; } })();
+
       if (!response.ok) {
-        throw new Error("Invalid email or password");
+        // Prefer upstream message if present
+        const msg =
+          (maybeJson && (maybeJson.error || maybeJson.message)) ||
+          text ||
+          `Login failed (${response.status})`;
+        throw new Error(msg);
       }
 
-      const user = await response.json();
-
-      if (user.email === "anonymous@livo.ai") {
-        user.test_account = true;
-      }
+      const user = maybeJson ?? {};
+      if (user.email === "anonymous@livo.ai") user.test_account = true;
 
       localStorage.setItem("currentUser", JSON.stringify(user));
       currentUser = user;
@@ -46,3 +51,4 @@ export const authenticationService = {
     currentUser = null;
   },
 };
+
