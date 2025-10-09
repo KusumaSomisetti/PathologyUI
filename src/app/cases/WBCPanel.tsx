@@ -3,7 +3,7 @@ import WBC_STATIC from "./cases.config";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Image } from "@heroui/image";
-import { useState, useMemo } from "react";
+import { useState, useMemo,useEffect } from "react";
 import { SearchPlusIcon, SearchMinusIcon, BarsIcon, FilterIcon } from 'react-line-awesome';
 import SignSlide from "../Components/SignSlide";
 
@@ -157,6 +157,26 @@ function WBCGroup({ className, files, imgBase, featuresMap, cols, onInc, onDec, 
         </section>
     );
 }
+function useResponsiveDefaultCols() {
+  const [baseCols, setBaseCols] = useState(11); // desktop default
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      // iPad-ish width: 768–1024px → 4 columns
+      if (w >= 768 && w <= 1024) {
+        setBaseCols(4);
+      } else {
+        setBaseCols(11); // keep desktop as you have now
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return baseCols;
+}
 
 const WBCPanel = forwardRef<HTMLDivElement, { report: any }>(({ report }, ref) => {
     if (!report) return <p className="p-4">Select a patient to see report details.</p>;
@@ -184,30 +204,35 @@ const WBCPanel = forwardRef<HTMLDivElement, { report: any }>(({ report }, ref) =
         [groups, orderIndex, visibleSet]
     );
 
-    const DEFAULT_COLS = 11;
-    const STEP = 2;
-    const MIN_COLS = 1;
-    const MAX_COLS = 25;
+     const BASE_DEFAULT_COLS = useResponsiveDefaultCols(); // 👈 new
 
-    const [colsByGroup, setColsByGroup] = useState<Record<string, number>>({});
+  const STEP = 2;
+  const MIN_COLS = 1;
+  const MAX_COLS = 25;
 
-    const getCols = (key: string) => colsByGroup[key] ?? DEFAULT_COLS;
+  const [colsByGroup, setColsByGroup] = useState<Record<string, number>>({});
 
-    const incCols = (key: string) =>
-        setColsByGroup((m) => {
-            const next = Math.min(getCols(key) + STEP, MAX_COLS);
-            return { ...m, [key]: next };
-        });
+  // If user hasn't changed this group's zoom, use the responsive default
+  const getCols = (key: string) => colsByGroup[key] ?? BASE_DEFAULT_COLS;
 
-    const decCols = (key: string) =>
-        setColsByGroup((m) => {
-            const next = Math.max(getCols(key) - STEP, MIN_COLS);
-            return { ...m, [key]: next };
-        });
+  const incCols = (key: string) =>
+    setColsByGroup((m) => {
+      const next = Math.min((m[key] ?? BASE_DEFAULT_COLS) + STEP, MAX_COLS);
+      return { ...m, [key]: next };
+    });
 
-    const resetCols = (key: string) =>
-        setColsByGroup((m) => ({ ...m, [key]: DEFAULT_COLS }));
+  const decCols = (key: string) =>
+    setColsByGroup((m) => {
+      const next = Math.max((m[key] ?? BASE_DEFAULT_COLS) - STEP, MIN_COLS);
+      return { ...m, [key]: next };
+    });
 
+  const resetCols = (key: string) =>
+    setColsByGroup((m) => {
+      const copy = { ...m };
+      delete copy[key]; // fall back to current responsive default
+      return copy;
+    });
     return (
         <div className="absolute inset-x-0 bottom-0 top-12">
             <div ref={ref} data-scroll-container className="h-full overflow-y-auto p-2">

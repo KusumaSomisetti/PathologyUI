@@ -109,11 +109,12 @@ export default function ReportPanel({ report, selectedCase, }: {
   };
   return (
     <div className="w-full h-full overflow-hidden flex">
-      <div className="w-1/5.2 h-full min-h-0 overflow-hidden p-0">
-        <LeftSubPanel />
-      </div>
+      <div className="shrink-0 w-[20%] min-w-[360px] h-full min-h-0 overflow-hidden p-0">
+  <LeftSubPanel />
+</div>
 
-      <div className="w-[80.77%] h-full min-h-0 flex flex-col relative">
+{/* Right: take the remaining space and allow shrinking on small screens */}
+<div className="flex-1 min-w-0 h-full min-h-0 flex flex-col relative">
         <div className="absolute top-0 right-2 h-12 z-50 flex items-center pointer-events-auto">
           <div className="flex gap-1">
             <Button size="sm" radius="sm" className="h-9 px-3 text-medium font-semibold bg-red-500 text-white relative z-[60] pointer-events-auto">

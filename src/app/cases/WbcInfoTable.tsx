@@ -103,25 +103,29 @@ export default function WbcInfoTable({ wbcCells, onRowClick }: Props) {
     return (
 
         <Table
-            aria-label="WBC Info Table"
-            isHeaderSticky
-            shadow="none"
-            radius="none"
-            className="h-full"
-            classNames={{
-                base: 'h-full',
-                wrapper: 'h-full overflow-y-auto p-0 !rounded-none !shadow-none',
-                thead: 'bg-white sticky top-0 z-10',
-                th: 'h-10 whitespace-nowrap font-semibold text-md py-1',
-                td: 'py-2 leading-relaxed',
-                tr: 'border-b border-gray-200 last:border-b-0',
-            }}
-        >
-            <TableHeader>
-                <TableColumn className="w-auto text-black-600">WBC Parameter</TableColumn>
-                <TableColumn className="w-12 text-center text-black-600">Count</TableColumn>
-                <TableColumn className="w-12 text-center text-black-600">%</TableColumn>
-            </TableHeader>
+  aria-label="WBC Info Table"
+  isHeaderSticky
+  shadow="none"
+  radius="none"
+  className="h-full min-w-[320px]"  // <- guarantees all 3 columns fit
+  classNames={{
+    base: 'h-full',
+    // keep vertical scrolling; avoid horizontal scroll by ensuring min width above
+    wrapper: 'h-full overflow-y-auto p-0 !rounded-none !shadow-none',
+    thead: 'bg-white sticky top-0 z-10',
+    th: 'h-10 whitespace-nowrap font-semibold text-md py-1',
+    td: 'py-2 leading-relaxed',
+    tr: 'border-b border-gray-200 last:border-b-0',
+  }}
+>
+  <TableHeader>
+    {/* Param column can flex, but give it a sane minimum */}
+    <TableColumn className="min-w-[180px] pr-2 text-black-600">WBC Parameter</TableColumn>
+
+    {/* Fix narrow, readable widths for numeric columns */}
+    <TableColumn className="w-14 text-center text-black-600">Count</TableColumn>
+    <TableColumn className="w-14 text-center text-black-600">%</TableColumn>
+  </TableHeader>
 
             <TableBody>
                 {rows.map((r) => {
