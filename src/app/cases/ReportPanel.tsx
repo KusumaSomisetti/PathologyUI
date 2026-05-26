@@ -16,9 +16,10 @@ import RBCPanel from "./RBCPanel";
 const spaceClass = (s: WbcInfo["space"]) =>
   s === "space-1" ? "pl-3" : s === "space-2" ? "pl-6" : s === "space-3" ? "pl-9" : "";
 
-export default function ReportPanel({ report, selectedCase, }: {
+export default function ReportPanel({ report, selectedCase, captureViewerOnly = false, }: {
   report: any;
   selectedCase: any;
+  captureViewerOnly?: boolean;
 }) {
   if (!report) return <p className="p-4">Select a patient to see report details.</p>;
   const [missingOpen, setMissingOpen] = useState(false);
@@ -109,12 +110,14 @@ export default function ReportPanel({ report, selectedCase, }: {
   };
   return (
     <div className="w-full h-full overflow-hidden flex">
-      <div className="shrink-0 w-[20%] min-w-[360px] h-full min-h-0 overflow-hidden p-0">
-  <LeftSubPanel />
-</div>
+      {!captureViewerOnly && (
+        <div className="shrink-0 w-[20%] min-w-[360px] h-full min-h-0 overflow-hidden p-0">
+          <LeftSubPanel />
+        </div>
+      )}
 
-{/* Right: take the remaining space and allow shrinking on small screens */}
-<div className="flex-1 min-w-0 h-full min-h-0 flex flex-col relative">
+      {/* Right: take the remaining space and allow shrinking on small screens */}
+      <div className="flex-1 min-w-0 h-full min-h-0 flex flex-col relative">
         <div className="absolute top-0 right-2 h-12 z-50 flex items-center pointer-events-auto">
           <div className="flex gap-1">
             <Button size="sm" radius="sm" className="h-9 px-3 text-medium font-semibold bg-red-500 text-white relative z-[60] pointer-events-auto">

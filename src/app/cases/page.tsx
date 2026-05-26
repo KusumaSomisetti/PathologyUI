@@ -29,6 +29,7 @@ type Patient = {
 type TabKey = "scanned" | "reported" | "rejected";
 
 export default function CasesPage() {
+  const [captureViewerOnly, setCaptureViewerOnly] = useState(false);
   const [tab, setTab] = useState<TabKey>("scanned");
 
   const [scannedCases, setScannedCases] = useState<Patient[]>([]);
@@ -135,6 +136,11 @@ export default function CasesPage() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setCaptureViewerOnly(params.get("capture") === "viewer");
+  }, []);
+
+  useEffect(() => {
     const arr = tab === "scanned" ? scannedCases : tab === "reported" ? reportedCases : rejectedCases;
 
     if (arr.length === 0) {
@@ -231,34 +237,42 @@ export default function CasesPage() {
     <div className="h-screen flex flex-col">
       <Topbar />
       <div className="flex flex-1 overflow-hidden">
-        <LeftPanel
-          cases={casesForTab}
-          selectedCase={selectedCase}
-          setSelectedCase={setSelectedCase}
-          tab={tab}
-          setTab={setTab}
-          tabCounts={tabCounts}
-          refreshAll={refreshAll}
-        />
+        {!captureViewerOnly && (
+          <LeftPanel
+            cases={casesForTab}
+            selectedCase={selectedCase}
+            setSelectedCase={setSelectedCase}
+            tab={tab}
+            setTab={setTab}
+            tabCounts={tabCounts}
+            refreshAll={refreshAll}
+          />
+        )}
 
         <div className="flex-1 overflow-auto p-0 bg-white">
-          <ReportPanel report={report} selectedCase={selectedCase} />
-          <SignSlide
-            blinded
-            selectedPatient={selectedCase ?? undefined}
-            currentPatientReport={report ?? undefined}
-            onSubmit={async (fd, _canSubmit) => {
-              if (!selectedCase) return;
-              const out = await submitReportToBackend(selectedCase.id, fd);
-
-              if (!out.ok) {
-                alert(out.message);
-                console.error("[SignSubmit ERROR]", out.debug);
-                return;
-              }
-              await refreshAll?.();
-            }}
+          <ReportPanel
+            report={report}
+            selectedCase={selectedCase}
+            captureViewerOnly={captureViewerOnly}
           />
+          {!captureViewerOnly && (
+            <SignSlide
+              blinded
+              selectedPatient={selectedCase ?? undefined}
+              currentPatientReport={report ?? undefined}
+              onSubmit={async (fd, _canSubmit) => {
+                if (!selectedCase) return;
+                const out = await submitReportToBackend(selectedCase.id, fd);
+
+                if (!out.ok) {
+                  alert(out.message);
+                  console.error("[SignSubmit ERROR]", out.debug);
+                  return;
+                }
+                await refreshAll?.();
+              }}
+            />
+          )}
         </div>
       </div>
     </div>
